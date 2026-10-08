@@ -157,7 +157,7 @@ long time_string_to_seconds(const char *time_string,
 
 	errno = 0;
 	i = strtol(time_string, &end, 10);
-	if (errno || time_string == end) {
+	if (errno || time_string == end || i < 0) {
 		if (subsystem)
 			syslog(LOG_ERR,
 			       "%s: Error converting %s to a number - line %d",
@@ -176,15 +176,23 @@ long time_string_to_seconds(const char *time_string,
 	case 's':
 		break;
 	case 'm':
+		if (i > LONG_MAX / (MINUTES))
+            	    return -1;
 		i *= MINUTES;
 		break;
 	case 'h':
+		if (i > LONG_MAX / (HOURS))
+            	    return -1;
 		i *= HOURS;
 		break;
 	case 'd':
+		if (i > LONG_MAX / (DAYS))
+                    return -1;
 		i *= DAYS;
 		break;
 	case 'M':
+		if (i > LONG_MAX / (MONTHS))
+                    return -1;
 		i *= MONTHS;
 		break;
 	case '\0':
