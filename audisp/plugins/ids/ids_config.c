@@ -498,11 +498,11 @@ static int block_address_time_parser(struct nv_pair *nv, int line,
 		struct ids_conf *config)
 {
 	char *end;
-	unsigned long i;
+	long i;
 
 	errno = 0;
-	i = strtoul(nv->value, &end, 10);
-	if (errno || nv->value == end) {
+	i = strtol(nv->value, &end, 10);
+	if (errno || nv->value == end || i < 0) {
 		syslog(LOG_ERR,
 			"Error converting %s to a number - line %d",
 			nv->value, line);
@@ -518,15 +518,23 @@ static int block_address_time_parser(struct nv_pair *nv, int line,
 
 	switch (*end) {
 		case 'm':
+			if (i > LONG_MAX / (MINUTES))
+            		    return 1;
 			i *= MINUTES;
 			break;
 		case 'h':
+			if (i > LONG_MAX / (HOURS))
+                            return 1;
 			i *= HOURS;
 			break;
 		case 'd':
+			if (i > LONG_MAX / (DAYS))
+                            return 1;
 			i *= DAYS;
 			break;
 		case 'M':
+			if (i > LONG_MAX / (MONTHS))
+                            return 1;
 			i *= MONTHS;
 			break;
 		case '\0':
